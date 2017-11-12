@@ -1,7 +1,7 @@
 {
   "name": "gemini-cryptoexchange-api",
   "version": "0.0.1",
-  "description": "Simple typescript interface to the Bitfinex cryptoexchange.",
+  "description": "Simple typescript interface to the Gemini cryptoexchange.",
   "main": "dist/es6/index.js",
   "types": "dist/es6/index.d.ts",
   "scripts": {

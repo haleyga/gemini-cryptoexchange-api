@@ -110,7 +110,7 @@ export interface IGeminiClient {
 }
 
 /**
- * Factory function to get a new GDAX client.
+ * Factory function to get a new Gemini client.
  *
  * @param {IApiAuth} auth
  * @returns {IGeminiClient}
@@ -132,7 +132,7 @@ export const getClient = (auth?: IApiAuth): IGeminiClient => ({
      */
     async getPublicEndpoint(endpoint: string,
                             queryParams?: {},
-                            configOverride?: IBitfinexRequestConfig): Promise<IGeminiResponse> {
+                            configOverride?: IGeminiRequestConfig): Promise<IGeminiResponse> {
 
         // Construct local config object
         const config = { ...defaultConfig, ...configOverride };
@@ -167,7 +167,7 @@ export const getClient = (auth?: IApiAuth): IGeminiClient => ({
      */
     async postToPrivateEndpoint(endpoint: string,
                                 data?: IPostBody,
-                                configOverride?: IBitfinexRequestConfig): Promise<IGeminiResponse> {
+                                configOverride?: IGeminiRequestConfig): Promise<IGeminiResponse> {
 
         // Ensure the user has credentials
         if (!this.isUpgraded()) return Promise.reject(`api keys are required to access private endpoints`);
@@ -219,7 +219,7 @@ export const getClient = (auth?: IApiAuth): IGeminiClient => ({
 /**
  * Alias for Axios request options.
  */
-export interface IBitfinexRequestConfig extends AxiosRequestConfig {}
+export interface IGeminiRequestConfig extends AxiosRequestConfig {}
 
 /**
  * Alias for Axios response.
