@@ -26,7 +26,7 @@ const defaultAgentConfig = {
         'Cache-Control' : 'no-cache',
         'Content-Length': 0,
         'Content-Type'  : 'text/plain',
-        'User-Agent'    : `Gemini API Client (gemini-api node package)`,
+        'User-Agent'    : `Gemini API Client (gemini-cryptoexchange-api node package)`,
     },
     method : 'GET',
     timeout: defaultConfig.timeout,
