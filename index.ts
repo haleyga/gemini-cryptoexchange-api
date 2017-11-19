@@ -237,6 +237,10 @@ export type IWithdrawCryptoParams = { address: string, amount: number };
 export interface IGeminiClient {
     rawAgent: IRawAgent;
 
+    isUpgraded(): boolean;
+
+    upgrade(newAuth: IApiAuth): void;
+
     getSymbols(): Promise<IGeminiResponse>;
 
     getTicker(symbol: string): Promise<IGeminiResponse>;
@@ -277,6 +281,10 @@ export interface IGeminiClient {
 export const getClient = (auth?: IApiAuth): IGeminiClient => ({
 
     rawAgent: getRawAgent(auth),
+
+    isUpgraded(): boolean { return this.rawAgent.isUpgraded(); },
+
+    upgrade(newAuth: IApiAuth): void { this.rawAgent.upgrade(newAuth); },
 
     /**
      * This endpoint retrieves all available symbols for trading
