@@ -97,9 +97,13 @@ export interface IRawAgent {
 
     isUpgraded(): boolean;
 
-    getPublicEndpoint(endpoint: string, queryParams?: {}): Promise<IGeminiResponse>;
+    getPublicEndpoint(endpoint: string,
+                      queryParams?: {},
+                      configOverride?: IGeminiRequestConfig): Promise<IGeminiResponse>;
 
-    postToPrivateEndpoint(endpoint: string, data?: IPostBody): Promise<IGeminiResponse>;
+    postToPrivateEndpoint(endpoint: string,
+                          data?: IPostBody,
+                          configOverride?: IGeminiRequestConfig): Promise<IGeminiResponse>;
 
     signMessage(privateKey: string, path: string, method: string, body?: {}): ISignature;
 
@@ -138,7 +142,7 @@ export const getRawAgent = (auth?: IApiAuth): IRawAgent => ({
         const uri = `${config.version}/${endpoint}?${qs.stringify(queryParams)}`;
 
         // Construct the actual config to be used
-        const agentConfig = { ...publicAgentConfig, url: uri };
+        const agentConfig = { ...publicAgentConfig, url: uri, ...config };
 
         // Send the request.
         const response = await axios(agentConfig);
@@ -183,10 +187,11 @@ export const getRawAgent = (auth?: IApiAuth): IRawAgent => ({
             'X-GEMINI-APIKEY'   : this.auth.publicKey,
             'X-GEMINI-PAYLOAD'  : signatureData.payload,
             'X-GEMINI-SIGNATURE': signatureData.digest,
+            ...config.headers,
         };
 
         // Construct the actual config to be used
-        const agentConfig = { ...privateAgentConfig, headers, url: uri, data: JSON.stringify(data) };
+        const agentConfig = { ...privateAgentConfig, headers, url: uri, data: JSON.stringify(data), ...config };
 
         try {
             const response = await axios(agentConfig);
@@ -278,7 +283,7 @@ export interface IGeminiClient {
     pingHeartbeat(): Promise<IGeminiResponse>;
 }
 
-export const getClient = (auth?: IApiAuth): IGeminiClient => ({
+export const getClient = (auth?: IApiAuth, config: IGeminiRequestConfig = null): IGeminiClient => ({
 
     rawAgent: getRawAgent(auth),
 
@@ -292,7 +297,7 @@ export const getClient = (auth?: IApiAuth): IGeminiClient => ({
      * @returns {Promise<IGeminiResponse>}
      */
     async getSymbols(): Promise<IGeminiResponse> {
-        return await this.rawAgent.getPublicEndpoint('symbols');
+        return await this.rawAgent.getPublicEndpoint('symbols', null, config);
     },
 
     /**
@@ -302,7 +307,7 @@ export const getClient = (auth?: IApiAuth): IGeminiClient => ({
      * @returns {Promise<IGeminiResponse>}
      */
     async getTicker(symbol: string): Promise<IGeminiResponse> {
-        return await this.rawAgent.getPublicEndpoint(`pubticker/${symbol}`);
+        return await this.rawAgent.getPublicEndpoint(`pubticker/${symbol}`, null, config);
     },
 
     /**
@@ -313,7 +318,7 @@ export const getClient = (auth?: IApiAuth): IGeminiClient => ({
      * @returns {Promise<IGeminiResponse>}
      */
     async getOrderBook(symbol: string, params?: IOrderBookParams): Promise<IGeminiResponse> {
-        return await this.rawAgent.getPublicEndpoint(`book/${symbol}`, params);
+        return await this.rawAgent.getPublicEndpoint(`book/${symbol}`, params, config);
     },
 
     /**
@@ -330,7 +335,7 @@ export const getClient = (auth?: IApiAuth): IGeminiClient => ({
      * @returns {Promise<IGeminiResponse>}
      */
     async getTradeHistory(symbol: string, params?: ITradesHistoryParams): Promise<IGeminiResponse> {
-        return await this.rawAgent.getPublicEndpoint(`trades/${symbol}`, params);
+        return await this.rawAgent.getPublicEndpoint(`trades/${symbol}`, params, config);
     },
 
     /**
@@ -338,7 +343,7 @@ export const getClient = (auth?: IApiAuth): IGeminiClient => ({
      * @returns {Promise<IGeminiResponse>}
      */
     async getCurrentAuction(symbol: string): Promise<IGeminiResponse> {
-        return await this.rawAgent.getPublicEndpoint(`auction/${symbol}`);
+        return await this.rawAgent.getPublicEndpoint(`auction/${symbol}`, null, config);
     },
 
     /**
@@ -358,7 +363,7 @@ export const getClient = (auth?: IApiAuth): IGeminiClient => ({
      * @returns {Promise<IGeminiResponse>}
      */
     async getAuctionHistory(symbol: string, params?: IAuctionHistoryParams): Promise<IGeminiResponse> {
-        return await this.rawAgent.getPublicEndpoint(`auction/${symbol}/history`, params);
+        return await this.rawAgent.getPublicEndpoint(`auction/${symbol}/history`, params, config);
     },
 
     /**
@@ -371,7 +376,7 @@ export const getClient = (auth?: IApiAuth): IGeminiClient => ({
      * @returns {Promise<IGeminiResponse>}
      */
     async placeOrder(params: IPlaceOrderParams): Promise<IGeminiResponse> {
-        return await this.rawAgent.postToPrivateEndpoint(`order/new`, params);
+        return await this.rawAgent.postToPrivateEndpoint(`order/new`, params, config);
     },
 
     /**
@@ -381,7 +386,7 @@ export const getClient = (auth?: IApiAuth): IGeminiClient => ({
      * @returns {Promise<IGeminiResponse>}
      */
     async cancelOrder(params: ICancelOrderParams): Promise<IGeminiResponse> {
-        return await this.rawAgent.postToPrivateEndpoint(`order/cancel`, params);
+        return await this.rawAgent.postToPrivateEndpoint(`order/cancel`, params, config);
     },
 
     /**
@@ -392,7 +397,7 @@ export const getClient = (auth?: IApiAuth): IGeminiClient => ({
      * @returns {Promise<IGeminiResponse>}
      */
     async cancelAllSessionOrders(): Promise<IGeminiResponse> {
-        return await this.rawAgent.postToPrivateEndpoint(`order/cancel/session`);
+        return await this.rawAgent.postToPrivateEndpoint(`order/cancel/session`, null, config);
     },
 
     /**
@@ -407,7 +412,7 @@ export const getClient = (auth?: IApiAuth): IGeminiClient => ({
      * @returns {Promise<IGeminiResponse>}
      */
     async cancelAllActiveOrders(): Promise<IGeminiResponse> {
-        return await this.rawAgent.postToPrivateEndpoint(`order/cancel/all`);
+        return await this.rawAgent.postToPrivateEndpoint(`order/cancel/all`, null, config);
     },
 
     /**
@@ -417,14 +422,14 @@ export const getClient = (auth?: IApiAuth): IGeminiClient => ({
      * @param params
      */
     async getOrderStatus(params: IOrderStatusParams): Promise<IGeminiResponse> {
-        return await this.rawAgent.postToPrivateEndpoint(`order/status`, params);
+        return await this.rawAgent.postToPrivateEndpoint(`order/status`, params, config);
     },
 
     /**
      * @returns {Promise<IGeminiResponse>}
      */
     async getActiveOrders(): Promise<IGeminiResponse> {
-        return await this.rawAgent.postToPrivateEndpoint(`orders`);
+        return await this.rawAgent.postToPrivateEndpoint(`orders`, null, config);
     },
 
     /**
@@ -432,14 +437,14 @@ export const getClient = (auth?: IApiAuth): IGeminiClient => ({
      * @returns {Promise<IGeminiResponse>}
      */
     async getPastTrades(params: IGetPastOrdersParams): Promise<IGeminiResponse> {
-        return await this.rawAgent.postToPrivateEndpoint(`mytrades`, params);
+        return await this.rawAgent.postToPrivateEndpoint(`mytrades`, params, config);
     },
 
     /**
      * @returns {Promise<IGeminiResponse>}
      */
     async getTradeVolume(): Promise<IGeminiResponse> {
-        return await this.rawAgent.postToPrivateEndpoint(`tradevolume`);
+        return await this.rawAgent.postToPrivateEndpoint(`tradevolume`, null, config);
     },
 
     /**
@@ -448,7 +453,7 @@ export const getClient = (auth?: IApiAuth): IGeminiClient => ({
      * @returns {Promise<IGeminiResponse>}
      */
     async getAvailableBalances(): Promise<IGeminiResponse> {
-        return await this.rawAgent.postToPrivateEndpoint(`balances`);
+        return await this.rawAgent.postToPrivateEndpoint(`balances`, null, config);
     },
 
     /**
@@ -459,7 +464,7 @@ export const getClient = (auth?: IApiAuth): IGeminiClient => ({
      * @returns {Promise<IGeminiResponse>}
      */
     async generateDepositAddress(currency: string, params?: IGenerateDepositAddressParams): Promise<IGeminiResponse> {
-        return await this.rawAgent.postToPrivateEndpoint(`deposit/${currency}/newAddress`, params);
+        return await this.rawAgent.postToPrivateEndpoint(`deposit/${currency}/newAddress`, params, config);
     },
 
     /**
@@ -473,7 +478,7 @@ export const getClient = (auth?: IApiAuth): IGeminiClient => ({
      * @returns {Promise<IGeminiResponse>}
      */
     async withdrawCrypto(currency: string, params: IWithdrawCryptoParams): Promise<IGeminiResponse> {
-        return await this.rawAgent.postToPrivateEndpoint(`withdraw/${currency}`, params);
+        return await this.rawAgent.postToPrivateEndpoint(`withdraw/${currency}`, params, config);
     },
 
     /**
@@ -484,7 +489,7 @@ export const getClient = (auth?: IApiAuth): IGeminiClient => ({
      * @returns {Promise<IGeminiResponse>}
      */
     async pingHeartbeat(): Promise<IGeminiResponse> {
-        return await this.rawAgent.postToPrivateEndpoint(`heartbeat`);
+        return await this.rawAgent.postToPrivateEndpoint(`heartbeat`, null, config);
     },
 });
 
