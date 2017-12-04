@@ -181,13 +181,15 @@ export const getRawAgent = (auth?: IApiAuth): IRawAgent => ({
 
         const signatureData = signMessage(uri, data, this.auth.privateKey);
 
+        const headersOverride = config ? config.headers : null;
+
         // Add the appropriate POST request headers (Key and Sign)
         const headers = {
             ...privateAgentConfig.headers,
             'X-GEMINI-APIKEY'   : this.auth.publicKey,
             'X-GEMINI-PAYLOAD'  : signatureData.payload,
             'X-GEMINI-SIGNATURE': signatureData.digest,
-            ...config.headers,
+            ...headersOverride,
         };
 
         // Construct the actual config to be used
