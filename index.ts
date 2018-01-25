@@ -21,15 +21,16 @@ const defaultConfig = {
  * Default HTTP agent configuration.
  */
 const defaultAgentConfig = {
-    baseURL: defaultConfig.rootUrl,
-    headers: {
+    baseURL       : defaultConfig.rootUrl,
+    headers       : {
         'Cache-Control' : 'no-cache',
         'Content-Length': 0,
         'Content-Type'  : 'text/plain',
         'User-Agent'    : `Gemini API Client (gemini-cryptoexchange-api node package)`,
     },
-    method : 'GET',
-    timeout: defaultConfig.timeout,
+    method        : 'GET',
+    timeout       : defaultConfig.timeout,
+    validateStatus: () => true,
 };
 
 /**
